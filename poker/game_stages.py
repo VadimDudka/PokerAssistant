@@ -1,5 +1,7 @@
 from .combinations import *
 from typing import List
+from collections import Counter
+import multiprocessing
 
 
 class Game(object):
@@ -51,21 +53,22 @@ class Game(object):
     def process_flop(self):
         my_combinations_lst = self.deck.get_combinations(2)
         my_combinations_sz = len(my_combinations_lst)
-        my_probs = [0] * 10
-        for comb in my_combinations_lst:
-            local_table = self.table.add_turn(comb[0], inplace=False).add_river(comb[1], inplace=False)
-            combination_idx = Game.get_combination(self.pocket, local_table)
-            my_probs[combination_idx] += 1
+        with multiprocessing.Pool(processes=4) as pool:
+            my_results = pool.map(Game.get_combination,
+                                  map(lambda x: x + self.table.cards[:3] + self.pocket.cards, my_combinations_lst))
+        my_count = Counter(my_results)
+        my_probs = [my_count[i] for i in range(10)]
         my_probs = list(map(lambda x: x / my_combinations_sz, my_probs))
 
         opp_combinations_lst = self.deck.get_combinations(4)
         opp_combinations_sz = len(opp_combinations_lst)
-        opp_probs = [0] * 10
-        for comb in opp_combinations_lst:
-            local_table = self.table.add_turn(comb[0], inplace=False).add_river(comb[1], inplace=False)
-            local_pocket = Pocket(comb[2:])
-            combination_idx = Game.get_combination(local_pocket, local_table)
-            opp_probs[combination_idx] += 1
+
+        with multiprocessing.Pool(processes=4) as pool:
+            opp_results = pool.map(Game.get_combination,
+                                   map(lambda x: x + self.table.cards[:3], opp_combinations_lst),
+                                   128)
+        opp_count = Counter(opp_results)
+        opp_probs = [opp_count[i] for i in range(10)]
         opp_probs = list(map(lambda x: x / opp_combinations_sz, opp_probs))
 
         result_dict = {'my_probs': my_probs,
@@ -79,18 +82,17 @@ class Game(object):
         my_probs = [0] * 10
         for comb in my_combinations_lst:
             local_table = self.table.add_river(comb[0], inplace=False)
-            combination_idx = Game.get_combination(self.pocket, local_table)
+            combination_idx = Game.get_combination(self.pocket.cards + local_table.cards)
             my_probs[combination_idx] += 1
         my_probs = list(map(lambda x: x / my_combinations_sz, my_probs))
 
         opp_combinations_lst = self.deck.get_combinations(3)
         opp_combinations_sz = len(opp_combinations_lst)
-        opp_probs = [0] * 10
-        for comb in opp_combinations_lst:
-            local_table = self.table.add_river(comb[0], inplace=False)
-            local_pocket = Pocket(comb[1:])
-            combination_idx = Game.get_combination(local_pocket, local_table)
-            opp_probs[combination_idx] += 1
+        with multiprocessing.Pool(processes=4) as pool:
+            opp_results = pool.map(Game.get_combination,
+                                   map(lambda x: x + self.table.cards[:4], opp_combinations_lst))
+        opp_count = Counter(opp_results)
+        opp_probs = [opp_count[i] for i in range(10)]
         opp_probs = list(map(lambda x: x / opp_combinations_sz, opp_probs))
 
         result_dict = {'my_probs': my_probs,
@@ -100,7 +102,7 @@ class Game(object):
 
     def process_river(self):
         my_probs = [0] * 10
-        combination_idx = Game.get_combination(self.pocket, self.table)
+        combination_idx = Game.get_combination(self.pocket.cards + self.table.cards)
         my_probs[combination_idx] += 1
 
         opp_combinations_lst = self.deck.get_combinations(2)
@@ -108,7 +110,7 @@ class Game(object):
         opp_probs = [0] * 10
         for comb in opp_combinations_lst:
             local_pocket = Pocket(comb)
-            combination_idx = Game.get_combination(local_pocket, self.table)
+            combination_idx = Game.get_combination(local_pocket.cards + self.table.cards)
             opp_probs[combination_idx] += 1
         opp_probs = list(map(lambda x: x / opp_combinations_sz, opp_probs))
 
@@ -142,24 +144,24 @@ class Game(object):
         return win_prob
 
     @staticmethod
-    def get_combination(pkt: Pocket, tbl: Table):
-        if has_royal_flush(pkt, tbl):
+    def get_combination(all_cards: List[Card]):
+        if has_royal_flush(all_cards=all_cards):
             return 0
-        elif has_straight_flush(pkt, tbl):
+        elif has_straight_flush(all_cards=all_cards):
             return 1
-        elif has_four_of_a_kind(pkt, tbl):
+        elif has_four_of_a_kind(all_cards=all_cards):
             return 2
-        elif has_full_house(pkt, tbl):
+        elif has_full_house(all_cards=all_cards):
             return 3
-        elif has_flush(pkt, tbl):
+        elif has_flush(all_cards=all_cards):
             return 4
-        elif has_straight(pkt, tbl):
+        elif has_straight(all_cards=all_cards):
             return 5
-        elif has_three_of_a_kind(pkt, tbl):
+        elif has_three_of_a_kind(all_cards=all_cards):
             return 6
-        elif has_two_pair(pkt, tbl):
+        elif has_two_pair(all_cards=all_cards):
             return 7
-        elif has_pair(pkt, tbl):
+        elif has_pair(all_cards=all_cards):
             return 8
         return 9
 
@@ -175,7 +177,7 @@ class Game(object):
         game_obj = Game(pocket, opponents_num=0)
         print('--- Pre-flop ---')
         res = game_obj.process_pre_flop()
-        print('Win prob: {:.2}%'.format(res['win_prob']))
+        print('Win prob: {:.2f}%'.format(100 * res['win_prob']))
         print('Opening flop')
         val1 = int(input('Card 1, val : '))
         suit1 = int(input('Card 1, suit : '))
@@ -188,18 +190,18 @@ class Game(object):
                             Card(val3, suit3)])
         print('--- Flop ---')
         res = game_obj.process_flop()
-        print('Win prob: {:.2}%'.format(res['win_prob']))
+        print('Win prob: {:.2f}%'.format(100 * res['win_prob']))
         print('Opening turn')
         val = int(input('Card val : '))
-        suit = int(input('Card val : '))
+        suit = int(input('Card suit : '))
         game_obj.open_turn(Card(val, suit))
         print('--- Turn ---')
         res = game_obj.process_turn()
-        print('Win prob: {:.2}%'.format(res['win_prob']))
+        print('Win prob: {:.2f}%'.format(100 * res['win_prob']))
         print('Opening river')
         val = int(input('Card val : '))
-        suit = int(input('Card val : '))
+        suit = int(input('Card suit : '))
         game_obj.open_river(Card(val, suit))
         print('--- River ---')
         res = game_obj.process_river()
-        print('Win prob: {:.2}%'.format(res['win_prob']))
+        print('Win prob: {:.2f}%'.format(100 * res['win_prob']))
