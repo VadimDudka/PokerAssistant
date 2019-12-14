@@ -1,5 +1,5 @@
 from collections import Counter
-from .objects import Card, Pocket, Table
+from .objects import *
 
 
 def has_royal_flush(pocket: Pocket, table: Table):
