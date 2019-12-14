@@ -2,8 +2,9 @@ from collections import Counter
 from .objects import *
 
 
-def has_royal_flush(pocket: Pocket, table: Table):
-    all_cards = pocket.cards + table.cards
+def has_royal_flush(pocket: Pocket = None, table: Table = None, all_cards: List[Card] = None):
+    if all_cards is None:
+        all_cards = pocket.cards + table.cards
     suit_numbers = Counter([card.suit for card in all_cards])
     most_common_suit_val = suit_numbers.most_common(1)[0][0]
     most_common_suit_number = suit_numbers.most_common(1)[0][1]
@@ -16,8 +17,9 @@ def has_royal_flush(pocket: Pocket, table: Table):
     return False
 
 
-def has_straight_flush(pocket: Pocket, table: Table):
-    all_cards = pocket.cards + table.cards
+def has_straight_flush(pocket: Pocket = None, table: Table = None, all_cards: List[Card] = None):
+    if all_cards is None:
+        all_cards = pocket.cards + table.cards
     suit_numbers = Counter([card.suit for card in all_cards])
     most_common_suit_val = suit_numbers.most_common(1)[0][0]
     most_common_suit_number = suit_numbers.most_common(1)[0][1]
@@ -34,32 +36,36 @@ def has_straight_flush(pocket: Pocket, table: Table):
     return False
 
 
-def has_four_of_a_kind(pocket: Pocket, table: Table):
-    all_cards = pocket.cards + table.cards
+def has_four_of_a_kind(pocket: Pocket = None, table: Table = None, all_cards: List[Card] = None):
+    if all_cards is None:
+        all_cards = pocket.cards + table.cards
     val_numbers = Counter([card.val for card in all_cards])
     if val_numbers.most_common(1)[0][1] == 4:
         return True
     return False
 
 
-def has_full_house(pocket: Pocket, table: Table):
-    all_cards = pocket.cards + table.cards
+def has_full_house(pocket: Pocket = None, table: Table = None, all_cards: List[Card] = None):
+    if all_cards is None:
+        all_cards = pocket.cards + table.cards
     val_numbers = Counter([card.val for card in all_cards])
     if val_numbers.most_common(2)[0][1] == 3 and val_numbers.most_common(2)[1][1] == 2:
         return True
     return False
 
 
-def has_flush(pocket: Pocket, table: Table):
-    all_cards = pocket.cards + table.cards
+def has_flush(pocket: Pocket = None, table: Table = None, all_cards: List[Card] = None):
+    if all_cards is None:
+        all_cards = pocket.cards + table.cards
     suit_numbers = Counter([card.suit for card in all_cards])
     if suit_numbers.most_common(1)[0][1] >= 5:
         return True
     return False
 
 
-def has_straight(pocket: Pocket, table: Table):
-    all_cards = pocket.cards + table.cards
+def has_straight(pocket: Pocket = None, table: Table = None, all_cards: List[Card] = None):
+    if all_cards is None:
+        all_cards = pocket.cards + table.cards
     cards_values = [card.val for card in all_cards]
 
     if {14, 2, 3, 4, 5}.issubset(cards_values):
@@ -70,24 +76,27 @@ def has_straight(pocket: Pocket, table: Table):
     return False
 
 
-def has_three_of_a_kind(pocket: Pocket, table: Table):
-    all_cards = pocket.cards + table.cards
+def has_three_of_a_kind(pocket: Pocket = None, table: Table = None, all_cards: List[Card] = None):
+    if all_cards is None:
+        all_cards = pocket.cards + table.cards
     val_numbers = Counter([card.val for card in all_cards])
     if val_numbers.most_common(1)[0][1] == 3:
         return True
     return False
 
 
-def has_two_pair(pocket: Pocket, table: Table):
-    all_cards = pocket.cards + table.cards
+def has_two_pair(pocket: Pocket = None, table: Table = None, all_cards: List[Card] = None):
+    if all_cards is None:
+        all_cards = pocket.cards + table.cards
     val_numbers = Counter([card.val for card in all_cards])
     if val_numbers.most_common(2)[0][1] == 2 and val_numbers.most_common(2)[1][1] == 2:
         return True
     return False
 
 
-def has_pair(pocket: Pocket, table: Table):
-    all_cards = pocket.cards + table.cards
+def has_pair(pocket: Pocket = None, table: Table = None, all_cards: List[Card] = None):
+    if all_cards is None:
+        all_cards = pocket.cards + table.cards
     val_numbers = Counter([card.val for card in all_cards])
     if val_numbers.most_common(2)[0][1] == 2:
         return True
