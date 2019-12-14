@@ -1,14 +1,14 @@
 # PokerAssistant
-Program which will help you to monitor the game.
+Program which will help you monitor the game.
 
 ### Overview
 This program is suited to [*No Limit Texas Holdem*](https://www.poker-king.com/dictionary/no-limit-texas-holdem/).
-It can show you your wining chance wrt **cards in your hand**, **cards on
+It can show your wining chance wrt **cards in your hand**, **cards on
 the table** and **number of your opponents** (not implemented yet).
 
 ### Starting working
 To start using this program you just need to call `game.start()` method
-(game class is located in **poker/game_stages.py**).  
+(Game class is located in **poker/game_stages.py**).  
 Once you do it program will offer you to enter info about cards which are in your **hand**.
 
 **Example :**  
@@ -20,14 +20,18 @@ Card 2, val : 4
 Card 2, suit : 2*  
 
 Here every card is defined by 2 numbers :
-- **Val**, which is card rank. can be one of [2, 14] int interval. Meaning:
+- **Val**, which is card rank. Can be one of [2, 14] int interval. Meaning:
     - *2 <= val <= 10* : card rank is actually val
     - *val == 11* : card rank is J
     - *val == 12* : card rank is Q
     - *val == 13* : card rank is K
     - *val == 14* : card rank is A
-- **Suit**, which is card suit. can be one of [0, 3] int interval. There is no
-strong associations between numbers and suits, but i prefer this one:
+- **Suit**, which is card suit. Can be one of [0, 3] int interval. There is no 
+strict definition that concrete number represent concrete suit, so you define it by
+yourself. The most important here is that if you define :hearts: as 0, then 
+in this game you should define **all** :hearts: as 0. Of course you can use this standard
+definition if you don`t want to think up your own definition. I will use this
+definition in my examples.
     - *suit == 0* : heart :hearts:
     - *suit == 1* : diamond :diamonds:
     - *suit == 2* : club :clubs:
