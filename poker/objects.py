@@ -1,4 +1,7 @@
-from typing import List
+from itertools import combinations
+from typing import List, Set
+import copy
+
 __package__ = 'poker.objects'
 
 
@@ -68,8 +71,62 @@ class Pocket(object):
 
 class Table(object):
 
+    # noinspection PyTypeChecker
     def __init__(self, cards: List[Card] = None) -> None:
         if not cards:
             self.cards = [None] * 5
+        elif len(cards) <= 5:
+            self.cards = cards + [None] * (5 - len(cards))
+        else:
+            raise Exception('Can`t be more than 5 cards on the table')
+
+    def add_flop(self, cards: List[Card], inplace: bool = True):
+        assert len(cards) == 3
+        if inplace:
+            self.cards[:3] = cards
+        else:
+            return Table(cards)
+
+    def add_turn(self, card: Card, inplace: bool = True):
+        if inplace:
+            self.cards[3] = card
+        else:
+            copy_cards = copy.deepcopy(self.cards)
+            copy_cards[3] = card
+            return Table(copy_cards)
+
+    def add_river(self, card: Card, inplace: bool = True):
+        if inplace:
+            self.cards[4] = card
+        else:
+            copy_cards = copy.deepcopy(self.cards)
+            copy_cards[4] = card
+            return Table(copy_cards)
+
+
+class Deck(object):
+
+    def __init__(self, cards: Set[Card] = None):
+        if cards is None:
+            self.cards = set()
+            for suit in range(4):
+                for val in range(2, 15):
+                    self.cards.add(Card(val, suit))
         else:
             self.cards = cards
+
+    def get_card_by_obj(self, card: Card):
+        self.cards -= card
+        return card
+
+    def get_card_by_sv(self, val: int, suit: int):
+        card = Card(val, suit)
+        self.cards -= card
+        return card
+
+    def get_cards(self, cards: Set[Card]):
+        self.cards -= cards
+        return cards
+
+    def get_combinations(self, size) -> List[List[Card]]:
+        return [list(comb) for comb in combinations(self.cards, size)]
